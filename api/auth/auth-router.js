@@ -27,6 +27,17 @@ const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require(
     "message": "Password must be longer than 3 chars"
   }
  */
+router.post("/register", checkUsernameFree, checkPasswordLength, async (req, res, next) => {
+  try {
+    const { username, password } = req.body
+    const hash = bcrypt.hashSync(password, 8)
+    const newUser = { username, password: hash }
+    const user = await User.add(newUser)
+    res.status(201).json(user)
+  } catch(err) {
+    next(err)
+  }
+});
 
 
 /**
@@ -44,7 +55,25 @@ const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require(
     "message": "Invalid credentials"
   }
  */
-
+router.post("/login", checkUsernameExists, async (req, res, next) => {
+  try {
+    const { username, password } = req.body
+    const [user] = await User.findBy({ username })
+    if(user && bcrypt.compareSync(password, user.password)) {
+      req.session.user = user
+      res.json({
+        message: `Welcome ${user.username}!`
+      })
+    } else {
+      next({
+        status: 401,
+        message: "Invalid credentials"
+      })
+    }
+  } catch(err) {
+    next(err)
+  }
+});
 
 /**
   3 [GET] /api/auth/logout
@@ -61,6 +90,23 @@ const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require(
     "message": "no session"
   }
  */
+router.get("/logout", (req, res, next) => {
+  if(req.session.user) {
+    req.session.destroy(err => {
+      if(err) {
+        next(err)
+      } else {
+        res.json({
+          message: "logged out"
+        })
+      }
+    })
+  } else {
+    res.json({
+      message: "no session"
+    })
+  }
+});
 
  
 // Don't forget to add the router to the `exports` object so it can be required in other modules

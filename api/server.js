@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const usersRouter = require("./users/users-router");
+const authRouter = require("./auth/auth-router");
 const cors = require("cors");
 const session = require("express-session");
 const Store = require("connect-session-knex")(session);
@@ -46,6 +47,7 @@ server.get("/", (req, res) => {
 });
 
 server.use("/api/users", usersRouter);
+server.use("/api/auth", authRouter);
 
 server.use((err, req, res, next) => { // eslint-disable-line
   res.status(err.status || 500).json({

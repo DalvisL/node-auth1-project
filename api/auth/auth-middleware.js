@@ -8,16 +8,14 @@
 */
 const User = require("../users/users-model");
 
-async function restricted(req, res, next) {
+async function restricted(req, res, next) { // eslint-disable-line
   if(!req.session || !req.session.user) {
     return res.status(401).json({
       message: "You shall not pass!"
     })
   } else {
-    //responds with the user object if there is a session matching the "chocolatechip" cookie
     const user = await User.find()
     res.status(200).json(user)
-    next()
   }
 }
 
@@ -29,15 +27,18 @@ async function restricted(req, res, next) {
     "message": "Username taken"
   }
 */
-function checkUsernameFree(req, res, next) {
+async function checkUsernameFree(req, res, next) {
   const { username } = req.body
-  if(username) {
+  const users = await User.find()
+  const user = users.find(user => user.username === username)
+
+  if(user) {
     return res.status(422).json({
       message: "Username taken"
     })
-  } else {
-    next()
   }
+  next()
+  
 }
 
 /*

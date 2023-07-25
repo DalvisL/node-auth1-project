@@ -5,13 +5,10 @@ const router = require("express").Router();
 
 router.get("/", restricted, async (req, res, next) => {
   try {
-    const users = Users.find() // eslint-disable-line
+    const users = await Users.find() // eslint-disable-line
       .then(users => {
         res.json(users);
       })
-      .catch(err => {
-        next(err);
-      });
   } catch(err) {
     next(err);
   }
